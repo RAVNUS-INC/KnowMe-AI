@@ -1,6 +1,8 @@
 from minio import Minio
 from minio.error import S3Error
 import logging
+import io
+from typing import Optional
 
 from config.settings import settings
 
@@ -32,6 +34,44 @@ def ensure_bucket_exists(bucket_name: str) -> bool:
         return True
     except S3Error as e:
         logger.error(f"버킷 확인/생성 실패: {str(e)}")
+        return False
+
+
+def get_object(bucket_name: str, object_name: str) -> Optional[io.BytesIO]:
+    """
+    MinIO에서 객체를 가져와서 BytesIO로 반환
+    """
+    try:
+        response = client.get_object(bucket_name, object_name)
+        data = response.read()
+        response.close()
+        response.release_conn()
+        return io.BytesIO(data)
+    except S3Error as e:
+        logger.error(f"객체 다운로드 실패 ({bucket_name}/{object_name}): {str(e)}")
+        return None
+
+
+def list_objects(bucket_name: str, prefix: str = "") -> list:
+    """
+    버킷의 객체 목록을 반환
+    """
+    try:
+        objects = client.list_objects(bucket_name, prefix=prefix)
+        return [obj.object_name for obj in objects]
+    except S3Error as e:
+        logger.error(f"객체 목록 조회 실패 ({bucket_name}): {str(e)}")
+        return []
+
+
+def object_exists(bucket_name: str, object_name: str) -> bool:
+    """
+    객체가 존재하는지 확인
+    """
+    try:
+        client.stat_object(bucket_name, object_name)
+        return True
+    except S3Error:
         return False
 
 
