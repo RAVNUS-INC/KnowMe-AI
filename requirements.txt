@@ -1,0 +1,14 @@
+pip-requirements
+chromadb
+sentence-transformers
+uuid
+logging
+pathlib
+pika
+aiofiles
+asyncio
+json
+boto3
+pydantic[dotenv]==2.5.0
+minio==7.2.7
+```
