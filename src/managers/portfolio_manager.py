@@ -10,9 +10,8 @@ from typing import List, Dict, Any, Optional, Tuple
 import chromadb
 from sentence_transformers import SentenceTransformer
 from pathlib import Path
-import uuid
 
-from src.models.portfolio import Portfolio
+from models.portfolio import Portfolio
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -33,7 +32,7 @@ class PortfolioChromaManager:
 
         Args:
             collection_name: 사용할 컬렉션 이름
-            persist_directory: 데이터 저장 디렉토리  
+            persist_directory: 데이터 저장 디렉토리
             embedding_model: 임베딩 모델명 (한국어 특화)
         """
         self.collection_name = collection_name
@@ -60,7 +59,7 @@ class PortfolioChromaManager:
             # 기존 컬렉션이 있으면 로드, 없으면 생성
             self.collection = self.client.get_or_create_collection(
                 name=self.collection_name,
-                metadata={"description": "사용자 포트폴리오 벡터 저장소"}
+                metadata={"description": "사용자 포트폴리오 벡터 저장소"},
             )
             logger.info(f"컬렉션 '{self.collection_name}' 초기화 완료")
         except Exception as e:
@@ -96,7 +95,7 @@ class PortfolioChromaManager:
                 embeddings=embeddings,
                 documents=[embedding_text],
                 metadatas=[metadata],
-                ids=[document_id]
+                ids=[document_id],
             )
 
             logger.info(f"포트폴리오 추가 완료: {document_id}")

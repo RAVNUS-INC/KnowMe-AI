@@ -10,5 +10,7 @@ asyncio
 json
 boto3
 pydantic[dotenv]==2.5.0
+pydantic-settings>=2.0.0
 minio==7.2.7
+openai>=1.0.0
 ```

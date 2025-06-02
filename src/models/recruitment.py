@@ -21,7 +21,6 @@ from typing import List, Optional, Dict, Any, Union
 from pydantic import BaseModel, Field, validator
 from datetime import datetime, date
 import json
-import hashlib
 import chromadb
 from sentence_transformers import SentenceTransformer
 import logging
@@ -512,7 +511,7 @@ class Recruitment(BaseModel):
         # Pydantic v2 호환성
         validate_assignment = True
         use_enum_values = True
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "id": 1001,
                 "title": "채용공고",

@@ -57,11 +57,12 @@ class TaskManager:
             
         except Exception as e:
             logger.error(f"메시지 처리 중 오류: {str(e)}")
-    
     async def _execute_task(self, task_id: str, handler: Callable, data: Dict[str, Any]):
         """태스크 실행"""
         try:
-            await handler(data)
+            # 메시지의 data 필드만 핸들러에 전달
+            task_data = data.get('data', {})
+            await handler(task_data)
             logger.info(f"태스크 완료: {task_id}")
         except Exception as e:
             logger.error(f"태스크 실행 오류 {task_id}: {str(e)}")

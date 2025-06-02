@@ -10,9 +10,9 @@ import signal
 import sys
 from typing import Dict, Any
 
-from queue.rabbitmq_client import RabbitMQClient
-from queue.task_manager import TaskManager
-from queue.task_handlers import (
+from task_queue.rabbitmq_client import RabbitMQClient
+from task_queue.task_manager import TaskManager
+from task_queue.task_handlers import (
     embedding_generation_task,
     recommend_activity_task,
     activity_search_task,
@@ -20,6 +20,8 @@ from queue.task_handlers import (
     activity_update_task,
     activity_delete_task,
     recommend_recruitment_task,
+    recommend_activities_with_metadata_task,
+    recommend_jobs_with_metadata_task,
 )
 
 # 로깅 설정
@@ -60,6 +62,15 @@ class MessageProcessor:
         # Recruitment 관련 태스크 핸들러들
         self.task_manager.register_handler(
             "recommend_recruitment", recommend_recruitment_task
+        )
+
+        # 메타데이터 기반 AI 추천 태스크 핸들러들
+        self.task_manager.register_handler(
+            "recommend_activities_with_metadata",
+            recommend_activities_with_metadata_task,
+        )
+        self.task_manager.register_handler(
+            "recommend_jobs_with_metadata", recommend_jobs_with_metadata_task
         )
 
     async def start_processing(self):

@@ -4,7 +4,7 @@ from typing import Optional
 import PyPDF2
 import fitz  # PyMuPDF - 더 나은 텍스트 추출을 위해
 
-from src.storage.minio_client import get_object
+from storage.minio_client import get_object
 
 logger = logging.getLogger(__name__)
 

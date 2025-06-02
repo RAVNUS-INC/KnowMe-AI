@@ -155,7 +155,7 @@ class Activity(BaseModel):
         """Pydantic 설정"""
 
         json_encoders = {datetime: lambda v: v.isoformat()}
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "postId": 1001,
                 "category": "대외활동",

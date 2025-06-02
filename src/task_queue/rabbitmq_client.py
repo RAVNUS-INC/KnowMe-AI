@@ -11,17 +11,19 @@ import asyncio
 import json
 from typing import Callable, Dict, Any
 from concurrent.futures import ThreadPoolExecutor
+from config.settings import settings
 
 # 로깅 설정
 logger = logging.getLogger(__name__)
 
+
 class RabbitMQClient:
     """RabbitMQ 클라이언트 클래스"""
 
-    def __init__(self, host: str = 'localhost', queue_name: str = 'default'):
+    def __init__(self, host: str = "localhost", queue_name: str = "default"):
         """
         RabbitMQ 클라이언트 초기화
-        
+
         Args:
             host: RabbitMQ 서버 호스트
             queue_name: 사용할 큐 이름
@@ -36,7 +38,15 @@ class RabbitMQClient:
     def _connect(self):
         """RabbitMQ 서버에 연결"""
         try:
-            self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=self.host))
+            # 인증 정보를 포함한 연결 파라미터 설정
+            credentials = pika.PlainCredentials(
+                username=settings.rabbitmq_user, password=settings.rabbitmq_password
+            )
+            parameters = pika.ConnectionParameters(
+                host=self.host, port=settings.rabbitmq_port, credentials=credentials
+            )
+
+            self.connection = pika.BlockingConnection(parameters)
             self.channel = self.connection.channel()
             self.channel.queue_declare(queue=self.queue_name, durable=True)
             logger.info(f"RabbitMQ에 연결되었습니다. 큐: {self.queue_name}")
@@ -48,12 +58,12 @@ class RabbitMQClient:
         """메시지를 큐에 게시"""
         try:
             self.channel.basic_publish(
-                exchange='',
+                exchange="",
                 routing_key=self.queue_name,
                 body=message,
                 properties=pika.BasicProperties(
                     delivery_mode=2,  # 메시지 지속성 설정
-                )
+                ),
             )
             logger.info(f"메시지가 큐에 게시되었습니다: {message}")
         except Exception as e:
@@ -69,41 +79,44 @@ class RabbitMQClient:
 
     async def async_consume(self, async_callback: Callable):
         """비동기로 큐에서 메시지를 소비"""
+
         def callback_wrapper(ch, method, properties, body):
             try:
                 # 메시지를 JSON으로 파싱 시도
                 try:
-                    data = json.loads(body.decode('utf-8'))
+                    data = json.loads(body.decode("utf-8"))
                 except json.JSONDecodeError:
-                    data = body.decode('utf-8')
-                
+                    data = body.decode("utf-8")
+
                 # 비동기 태스크 생성
                 asyncio.create_task(async_callback(data))
                 logger.info(f"비동기 태스크가 생성되었습니다: {data}")
-                
+
             except Exception as e:
                 logger.error(f"메시지 처리 중 오류 발생: {str(e)}")
 
         try:
             self.channel.basic_consume(
-                queue=self.queue_name, 
-                on_message_callback=callback_wrapper, 
-                auto_ack=True
+                queue=self.queue_name,
+                on_message_callback=callback_wrapper,
+                auto_ack=True,
             )
             logger.info("비동기 메시지 소비를 시작합니다.")
-            
+
             # 논블로킹 방식으로 메시지 처리
             while True:
                 self.connection.process_data_events(time_limit=1)
                 await asyncio.sleep(0.1)  # 다른 코루틴에게 제어권 양보
-                
+
         except Exception as e:
             logger.error(f"비동기 메시지 소비 실패: {str(e)}")
 
     def consume(self, callback):
         """큐에서 메시지를 소비 (기존 동기 방식)"""
         try:
-            self.channel.basic_consume(queue=self.queue_name, on_message_callback=callback, auto_ack=True)
+            self.channel.basic_consume(
+                queue=self.queue_name, on_message_callback=callback, auto_ack=True
+            )
             logger.info("메시지 소비를 시작합니다.")
             self.channel.start_consuming()
         except Exception as e:

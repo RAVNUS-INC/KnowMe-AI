@@ -1,12 +1,8 @@
 from minio import Minio
 from minio.error import S3Error
 import logging
-<<<<<<< HEAD
 import io
 from typing import Optional
-=======
->>>>>>> 6f46e8d (feat: initialize langchain project)
-
 from config.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -40,7 +36,6 @@ def ensure_bucket_exists(bucket_name: str) -> bool:
         return False
 
 
-<<<<<<< HEAD
 def get_object(bucket_name: str, object_name: str) -> Optional[io.BytesIO]:
     """
     MinIO에서 객체를 가져와서 BytesIO로 반환
@@ -79,8 +74,6 @@ def object_exists(bucket_name: str, object_name: str) -> bool:
         return False
 
 
-=======
->>>>>>> 6f46e8d (feat: initialize langchain project)
 # 기본 버킷들 생성
 DEFAULT_BUCKETS = ["documents", "embeddings", "temp"]
 

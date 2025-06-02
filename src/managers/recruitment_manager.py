@@ -9,9 +9,8 @@ from typing import List, Dict, Any, Optional, Tuple
 import chromadb
 from sentence_transformers import SentenceTransformer
 from pathlib import Path
-from datetime import datetime, date
 
-from src.models.recruitment import Recruitment, create_chroma_recruitment_filter
+from models.recruitment import Recruitment
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)

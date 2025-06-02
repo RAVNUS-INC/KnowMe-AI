@@ -8,10 +8,10 @@ import asyncio
 import logging
 from typing import Dict, Any
 import aiofiles
-import os
-from src.models.portfolio import Portfolio, validate_portfolio_metadata
-from src.models.activity import Activity, validate_activity_metadata
-from src.managers.activity_manager import ActivityChromaManager, create_activity_manager
+from models.portfolio import Portfolio, validate_portfolio_metadata
+from models.activity import Activity, validate_activity_metadata
+from managers.activity_manager import create_activity_manager
+from services.recommendation_service import RecommendationService
 
 logger = logging.getLogger(__name__)
 
@@ -279,10 +279,8 @@ async def recommend_activity_task(data: Dict[str, Any]):
             }
 
         # 실제 추천 시스템 호출
-        await asyncio.sleep(1)  # 처리 시간 시뮬레이션
-
-        # 사용자 맞춤 추천 수행
-        from src.managers.activity_manager import recommend_activities_for_user
+        await asyncio.sleep(1)  # 처리 시간 시뮬레이션        # 사용자 맞춤 추천 수행
+        from managers.activity_manager import recommend_activities_for_user
 
         recommendations = recommend_activities_for_user(
             manager=manager,
@@ -374,10 +372,8 @@ async def activity_search_task(data: Dict[str, Any]):
                 "results": dummy_results[:limit],
                 "total_count": len(dummy_results),
                 "is_dummy": True,
-            }
-
-        # 검색 필터 생성
-        from src.models.activity import create_chroma_query_filter
+            }  # 검색 필터 생성
+        from models.activity import create_chroma_query_filter
 
         filters = create_chroma_query_filter(
             category=category,
@@ -556,4 +552,104 @@ async def activity_delete_task(data: Dict[str, Any]):
 
     except Exception as e:
         logger.error(f"대외활동 삭제 오류: {str(e)}")
+        raise
+
+
+async def recommend_activities_with_metadata_task(data: Dict[str, Any]):
+    """메타데이터 기반 대외활동 추천 태스크"""
+    try:
+        user_profile = data.get("user_profile", {})
+        metadata_filters = data.get("metadata_filters")
+        n_results = data.get("n_results", 10)
+
+        if not user_profile:
+            raise ValueError("user_profile이 필요합니다")
+
+        logger.info(
+            f"메타데이터 기반 대외활동 추천 시작: {user_profile.get('user_id', 'unknown')}"
+        )
+
+        # 추천 서비스 인스턴스 생성
+        recommendation_service = RecommendationService()
+
+        # 추천 실행
+        result = recommendation_service.recommend_activities_with_metadata(
+            user_profile=user_profile,
+            metadata_filters=metadata_filters,
+            n_results=n_results,
+        )
+
+        logger.info(
+            f"메타데이터 기반 대외활동 추천 완료: {result['recommendation_count']}개 추천"
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error(f"메타데이터 기반 대외활동 추천 오류: {str(e)}")
+        raise
+
+
+async def recommend_jobs_with_metadata_task(data: Dict[str, Any]):
+    """메타데이터 기반 채용공고 추천 태스크"""
+    try:
+        user_profile = data.get("user_profile", {})
+        metadata_filters = data.get("metadata_filters")
+        n_results = data.get("n_results", 10)
+
+        if not user_profile:
+            raise ValueError("user_profile이 필요합니다")
+
+        logger.info(
+            f"메타데이터 기반 채용공고 추천 시작: {user_profile.get('user_id', 'unknown')}"
+        )
+
+        # 추천 서비스 인스턴스 생성
+        recommendation_service = RecommendationService()
+
+        # 추천 실행
+        result = recommendation_service.recommend_jobs_with_metadata(
+            user_profile=user_profile,
+            metadata_filters=metadata_filters,
+            n_results=n_results,
+        )
+
+        logger.info(
+            f"메타데이터 기반 채용공고 추천 완료: {result['recommendation_count']}개 추천"
+        )
+
+        return result
+
+    except Exception as e:
+        logger.error(f"메타데이터 기반 채용공고 추천 오류: {str(e)}")
+        raise
+
+
+async def recommend_recruitment_task(data: Dict[str, Any]):
+    """채용공고 추천 태스크 (기본 버전)"""
+    try:
+        user_profile = data.get("user_profile", {})
+        n_results = data.get("n_results", 10)
+
+        if not user_profile:
+            raise ValueError("user_profile이 필요합니다")
+
+        logger.info(f"채용공고 추천 시작: {user_profile.get('user_id', 'unknown')}")
+
+        # 기본 추천 서비스 인스턴스 생성
+        recommendation_service = RecommendationService()
+
+        # 기본 추천 실행 (메타데이터 필터 없이)
+        result = recommendation_service.recommend_jobs_with_metadata(
+            user_profile=user_profile,
+            metadata_filters=None,  # 기본 추천은 필터 없음
+            n_results=n_results,
+        )
+
+        logger.info(f"채용공고 추천 완료: {result['recommendation_count']}개 추천")
+
+        return result
+
+    except Exception as e:
+        logger.error(f"채용공고 추천 오류: {str(e)}")
         raise
