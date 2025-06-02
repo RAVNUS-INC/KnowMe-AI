@@ -8,7 +8,7 @@ load_dotenv()
 class Settings(BaseSettings):
     # OpenAI API 설정
     openai_api_key: str = os.getenv("OPENAI_API_KEY")
-    openai_model: str = "o4-mini-2025-04-16"
+    openai_model: str = "gpt-4o-mini"
 
     # ChromaDB 설정
     chroma_host: str = "localhost"
