@@ -13,15 +13,7 @@ from typing import Dict, Any
 from task_queue.rabbitmq_client import RabbitMQClient
 from task_queue.task_manager import TaskManager
 from task_queue.task_handlers import (
-    embedding_generation_task,
-    recommend_activity_task,
-    activity_search_task,
-    activity_add_task,
-    activity_update_task,
-    activity_delete_task,
-    recommend_recruitment_task,
-    recommend_activities_with_metadata_task,
-    recommend_jobs_with_metadata_task,
+    analyze_portfolio_task,
 )
 
 # 로깅 설정
@@ -34,11 +26,9 @@ logger = logging.getLogger(__name__)
 class MessageProcessor:
     """메시지 처리기 클래스"""
 
-    def __init__(
-        self, rabbitmq_host: str = "localhost", queue_name: str = "task_queue"
-    ):
-        self.rabbitmq_client = RabbitMQClient(host=rabbitmq_host, queue_name=queue_name)
-        self.task_manager = TaskManager()
+    def __init__(self, rabbitmq_host: str = "localhost"):
+        self.rabbitmq_client = RabbitMQClient(host=rabbitmq_host)
+        self.task_manager = TaskManager(rabbitmq_client=self.rabbitmq_client)
         self.is_running = False
 
         # 태스크 핸들러 등록
@@ -47,30 +37,8 @@ class MessageProcessor:
     def _register_handlers(self):
         """태스크 핸들러들을 등록"""
         self.task_manager.register_handler(
-            "embedding_generation", embedding_generation_task
-        )
-
-        # Activity 관련 태스크 핸들러들
-        self.task_manager.register_handler(
-            "recommend_activity", recommend_activity_task
-        )
-        self.task_manager.register_handler("activity_search", activity_search_task)
-        self.task_manager.register_handler("activity_add", activity_add_task)
-        self.task_manager.register_handler("activity_update", activity_update_task)
-        self.task_manager.register_handler("activity_delete", activity_delete_task)
-
-        # Recruitment 관련 태스크 핸들러들
-        self.task_manager.register_handler(
-            "recommend_recruitment", recommend_recruitment_task
-        )
-
-        # 메타데이터 기반 AI 추천 태스크 핸들러들
-        self.task_manager.register_handler(
-            "recommend_activities_with_metadata",
-            recommend_activities_with_metadata_task,
-        )
-        self.task_manager.register_handler(
-            "recommend_jobs_with_metadata", recommend_jobs_with_metadata_task
+            "ANALYZE",
+            analyze_portfolio_task,
         )
 
     async def start_processing(self):
@@ -140,7 +108,7 @@ async def main():
 # 메시지 전송 테스트 함수들
 def send_test_messages():
     """테스트 메시지 전송"""
-    client = RabbitMQClient(queue_name="task_queue")
+    client = RabbitMQClient()
 
     # 문서 처리 태스크
     client.publish_json(

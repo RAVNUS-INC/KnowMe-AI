@@ -2,33 +2,16 @@
 
 ## 개요
 
-KnowMe AI는 벡터 데이터베이스와 OpenAI GPT를 활용한 개인화 AI 서비스입니다. 포트폴리오 문서를 분석하여 사용자에게 맞춤형 대외활동 추천, 채용 공고 추천, 포트폴리오 강점/약점 분석을 제공합니다. **순수 Python 서비스**로 구현되어 CLI 도구와 RabbitMQ 메시지 기반 시스템을 통해 사용할 수 있습니다.
+KnowMe AI는 벡터 데이터베이스와 OpenAI GPT를 활용한 개인화 AI 서비스입니다. 포트폴리오 문서를 분석하여 사용자에게 맞춤형 대외활동 추천, 채용 공고 추천, 포트폴리오 강점/약점 분석을 제공합니다. **순수 Python 서비스**로 구현되어 RabbitMQ 메시지 기반 시스템을 통해 사용할 수 있습니다.
 
 ## 주요 기능
 
-- **🎯 개인화 AI 분석**: OpenAI GPT를 활용한 포트폴리오 기반 맞춤 분석
-- **📋 대외활동 추천**: 사용자 프로필 기반 개인화 활동 추천
-- **💼 채용 공고 추천**: 스킬과 경력에 맞는 적합한 직무 추천
 - **📊 포트폴리오 분석**: 강점/약점 평가 및 개선 방안 제시
-- **🔍 벡터 검색**: ChromaDB를 이용한 의미 기반 문서 검색
-- **🚀 CLI 도구**: 명령줄에서 간편하게 사용할 수 있는 인터페이스
 - **📨 메시지 기반 처리**: RabbitMQ를 통한 비동기 작업 처리
-
+- 
 ## 🚀 새로운 AI 추천 기능
 
-### 1. 대외활동 추천 🎯
-
-- **포트폴리오 기반 분석**: 기존 프로젝트와 스킬을 바탕으로 적합한 활동 추천
-- **개인화 필터링**: 관심분야, 선호 지역, 활동 유형별 맞춤 추천
-- **성장 경로 제시**: 현재 수준에서 다음 단계로 나아갈 활동 제안
-
-### 2. 채용 공고 추천 💼
-
-- **스킬 매칭**: 보유 기술과 경험에 맞는 직무 추천
-- **경력 단계별 추천**: 신입/경력직 구분한 적합한 포지션 제안
-- **시장 분석**: 희망 분야의 채용 트렌드와 요구사항 분석
-
-### 3. 포트폴리오 분석 📊
+### 1. 포트폴리오 분석 📊
 
 - **강점/약점 평가**: AI 기반 포트폴리오 종합 분석을 간결한 문장으로 제공
 - **추천 포지션**: 분석 결과를 바탕으로 가장 적합한 직무 추천
@@ -39,8 +22,8 @@ KnowMe AI는 벡터 데이터베이스와 OpenAI GPT를 활용한 개인화 AI �
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   CLI 도구       │───▶│  PersonalizedAI │───▶│   OpenAI GPT    │
-│  (사용자 입력)   │    │    Service      │    │  (AI 분석)      │
+│  Python 서비스   │───▶│  PersonalizedAI │───▶│   OpenAI GPT    │
+│  (프로그래밍)    │    │    Service      │    │  (AI 분석)      │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                  │                       │
 ┌─────────────────┐             ▼                       ▼
@@ -52,35 +35,42 @@ KnowMe AI는 벡터 데이터베이스와 OpenAI GPT를 활용한 개인화 AI �
 
 **🔄 순수 Python 서비스 아키텍처**
 
-- FastAPI 없이 순수 Python 서비스로 구현
-- CLI 도구를 통한 직관적인 사용자 인터페이스
+- 순수 Python 서비스로 구현
 - RabbitMQ 메시지 기반 비동기 처리 지원
-- 벡터 데이터베이스를 통한 의미 기반 검색
+
+## 프로젝트 구조
 
 ## 프로젝트 구조
 
 ```
 knowme_ai/
-├── ai_cli.py                  # 🆕 CLI 도구 (메인 인터페이스)
 ├── src/
 │   ├── main.py                # RabbitMQ 메시지 처리 워커
-│   ├── services/              # 🆕 AI 서비스
+│   ├── services/              # AI 서비스
 │   │   └── personalized_ai_service.py  # 개인화 AI 서비스
-│   ├── database/              # 벡터 데이터베이스
-│   │   └── vector_database.py
 │   ├── config/                # 설정 관리
+│   │   ├── __init__.py
 │   │   └── settings.py
 │   ├── task_queue/            # RabbitMQ 관리
+│   │   ├── __init__.py
 │   │   ├── rabbitmq_client.py
 │   │   ├── task_manager.py
 │   │   └── task_handlers.py
-│   ├── models/                # 데이터 모델
 │   └── utils/                 # 유틸리티
-├── tests/                     # 테스트
-├── chroma_db/                 # 벡터 DB 저장소
+│       ├── __init__.py
+│       ├── logger.py          # 로깅 관리
+│       └── pdf_extractor.py   # PDF 문서 처리
 ├── docker-compose.yml         # Docker 환경
-└── requirements.txt           # 의존성
+├── pyproject.toml             # 프로젝트 설정 (uv 패키지 관리)
+├── requirements.txt           # 의존성
+└── uv.lock                    # uv 잠금 파일
 ```
+
+**주요 파일 설명:**
+- `src/main.py`: RabbitMQ 워커 프로세스의 진입점
+- `src/services/personalized_ai_service.py`: 핵심 AI 분석 및 추천 서비스
+- `src/utils/pdf_extractor.py`: PDF 포트폴리오 문서 처리
+- `pyproject.toml`: uv 패키지 매니저를 위한 프로젝트 설정
 
 ## 설치 및 설정
 
@@ -92,15 +82,20 @@ knowme_ai/
 
 ### 2. 프로젝트 클론 및 의존성 설치
 
-```powershell
+```bash
 git clone <repository-url>
 cd knowme_ai
+
+# uv를 사용한 의존성 설치 (권장)
+uv sync
+
+# 또는 pip 사용
 pip install -r requirements.txt
 ```
 
 ### 3. 환경 변수 설정
 
-```powershell
+```bash
 # .env 파일 생성 및 설정
 OPENAI_API_KEY=your_openai_api_key_here
 VECTOR_DB_PATH=./chroma_db
@@ -108,67 +103,14 @@ VECTOR_DB_PATH=./chroma_db
 
 ### 4. Docker 서비스 시작 (선택사항)
 
-```powershell
+```bash
 # RabbitMQ 등 백엔드 서비스가 필요한 경우
 docker-compose up -d
 ```
 
 ## 🎯 사용 방법
 
-### 1. CLI 도구 사용 (추천)
-
-KnowMe AI는 사용하기 쉬운 CLI 도구를 제공합니다:
-
-#### 포트폴리오 강점/약점 분석
-
-```powershell
-# 기본 분석
-python ai_cli.py portfolio
-
-# 특정 영역 집중 분석
-python ai_cli.py portfolio --focus "기술,경험"
-
-# 테스트 모드 (OpenAI API 호출 없이)
-python ai_cli.py portfolio --test
-```
-
-#### 대외활동 추천
-
-```powershell
-# 기본 추천
-python ai_cli.py activities
-
-# 선호도 포함 추천
-python ai_cli.py activities --preferences '{"관심분야": "AI", "지역": "서울"}'
-
-# 테스트 모드
-python ai_cli.py activities --test
-```
-
-#### 채용 공고 추천
-
-```powershell
-# 기본 추천
-python ai_cli.py jobs
-
-# 테스트 모드
-python ai_cli.py jobs --test
-```
-
-#### 종합 분석
-
-```powershell
-# 모든 분석을 한번에
-python ai_cli.py comprehensive
-
-# JSON 형태로 상세 결과
-python ai_cli.py comprehensive --json
-
-# 테스트 모드
-python ai_cli.py comprehensive --test --json
-```
-
-### 2. Python 코드에서 직접 사용
+### 1. Python 코드에서 직접 사용 (메인 방법)
 
 ```python
 from src.services.personalized_ai_service import PersonalizedAIService
@@ -178,7 +120,9 @@ service = PersonalizedAIService()
 
 # 포트폴리오 분석
 portfolio_result = service.analyze_portfolio_strengths_weaknesses()
-print(f"평가: {portfolio_result['overall_assessment']['grade']}")
+print(f"강점: {portfolio_result['strength']}")
+print(f"약점: {portfolio_result['weakness']}")
+print(f"추천 포지션: {portfolio_result['recommend_position']}")
 
 # 대외활동 추천
 activities_result = service.recommend_activities()
@@ -191,13 +135,13 @@ for job in jobs_result['job_recommendations']:
     print(f"직무: {job['position']}")
 ```
 
-### 3. RabbitMQ 메시지 기반 사용 (고급)
+### 2. RabbitMQ 메시지 기반 사용 (고급)
 
 RabbitMQ를 통한 비동기 처리가 필요한 경우:
 
 #### 워커 프로세스 시작
 
-```powershell
+```bash
 # RabbitMQ 서비스 시작
 docker-compose up -d
 
@@ -207,28 +151,28 @@ python src/main.py
 
 #### 테스트 클라이언트 실행
 
-```powershell
+```bash
 # 새 터미널에서 RabbitMQ 테스트
-python tests/test_rabbitmq_recommendations.py
+python -m pytest -v
 ```
 
 ## 🛠️ 개발 및 테스트
 
 ### 단위 테스트 실행
 
-```powershell
+```bash
 # 모든 테스트 실행
-pytest tests/
+pytest
 
-# 특정 테스트 실행
-pytest tests/test_vector_database.py
+# 특정 테스트 실행 (예시)
+python test_portfolio_analysis.py
 ```
 
-### 벡터 데이터베이스 상태 확인
+### PDF 문서 처리 테스트
 
-```powershell
-# 벡터 DB 테스트
-python tests/test_vector_database.py
+```bash
+# PDF 추출 기능 테스트
+python -c "from src.utils.pdf_extractor import PDFExtractor; print('PDF extractor works!')"
 ```
 
 ## 📚 API 참조
@@ -243,11 +187,52 @@ class PersonalizedAIService:
             test_mode: True일 경우 OpenAI API 호출 없이 모의 응답 반환
         """
 
-    def recommend_activities(self, preferences: dict = None) -> dict:
-        """대외활동 추천"""
+    def recommend_activities(self, preferences: dict = None, user_id: str = None) -> dict:
+        """
+        대외활동 추천
+        
+        Returns:
+            {
+                "success": True,
+                "recommendations": [
+                    {
+                        "activity_type": "활동 유형",
+                        "title": "활동명",
+                        "description": "활동 설명",
+                        "relevance_reason": "추천 이유",
+                        "expected_benefits": ["혜택1", "혜택2"],
+                        "difficulty_level": "난이도",
+                        "time_commitment": "소요 시간"
+                    }
+                ],
+                "overall_strategy": "전체 전략",
+                "priority_areas": ["우선영역1", "우선영역2"]
+            }
+        """
 
-    def recommend_jobs(self, criteria: dict = None) -> dict:
-        """채용 공고 추천"""    def analyze_portfolio_strengths_weaknesses(self, focus_areas: list = None) -> dict:
+    def recommend_jobs(self, criteria: dict = None, user_id: str = None) -> dict:
+        """
+        채용 공고 추천
+        
+        Returns:
+            {
+                "success": True,
+                "job_recommendations": [
+                    {
+                        "position": "직무명",
+                        "company_type": "회사 유형",
+                        "match_score": "매칭 점수",
+                        "required_skills": ["필요 스킬"],
+                        "growth_potential": "성장 가능성",
+                        "why_suitable": "적합 이유"
+                    }
+                ],
+                "market_insights": "시장 분석",
+                "career_advice": "커리어 조언"
+            }
+        """
+
+    def analyze_portfolio_strengths_weaknesses(self, focus_areas: list = None, user_id: str = None) -> dict:
         """
         포트폴리오 강점/약점 분석
 
@@ -255,25 +240,34 @@ class PersonalizedAIService:
             {
                 "success": True,
                 "strength": "포트폴리오의 주요 강점을 종합한 문장",
-                "weakness": "포트폴리오의 주요 약점을 종합한 문장",
+                "weakness": "포트폴리오의 주요 약점을 종합한 문장", 
                 "recommend_position": "추천 포지션",
                 "generated_at": "2025-06-03T03:22:44.984111"
             }
         """
+
+    def get_comprehensive_insights(self, user_id: str = None) -> dict:
+        """종합적인 분석 결과 제공"""
+
+    def analyze_portfolio_from_data(self, portfolio_data: dict) -> dict:
+        """특정 포트폴리오 데이터를 기반으로 분석"""
 ```
 
 ### CLI 명령어 상세
 
-```powershell
-# 도움말
-python ai_cli.py --help
-python ai_cli.py portfolio --help
+현재 프로젝트는 CLI 도구 대신 Python 모듈로 직접 사용하도록 설계되어 있습니다. 다음과 같이 사용할 수 있습니다:
 
-# 모든 명령에 공통 옵션
---test          # 테스트 모드 활성화
---json          # JSON 형태 출력 (comprehensive 명령)
---focus         # 분석 영역 지정 (portfolio 명령)
---preferences   # 선호도 JSON 문자열 (activities 명령)
+```bash
+# 서비스 직접 실행
+python -c "
+from src.services.personalized_ai_service import PersonalizedAIService
+service = PersonalizedAIService(test_mode=True)
+result = service.analyze_portfolio_strengths_weaknesses()
+print(result)
+"
+
+# 메인 워커 실행
+python src/main.py
 ```
 
 ## 🔧 설정
@@ -321,12 +315,13 @@ class Settings(BaseSettings):
    해결: chroma_db 폴더 권한 확인, 또는 삭제 후 재생성
    ```
 
-3. **CLI 도구 실행 오류**
-   ```
-   해결:
-   cd c:\Workspace\knowme_ai
-   python -m pip install -r requirements.txt
-   python ai_cli.py portfolio --test
+3. **Python 모듈 import 오류**
+   ```bash
+   # 해결방법
+   cd /Users/seongyun/Code/KnowMe-AI
+   uv sync  # 또는 pip install -r requirements.txt
+   export PYTHONPATH=/Users/seongyun/Code/KnowMe-AI:$PYTHONPATH
+   python -c "from src.services.personalized_ai_service import PersonalizedAIService; print('Import successful')"
    ```
 
 ### 로깅
@@ -340,10 +335,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 ## 📋 할 일 목록
 
-- [ ] 웹 UI 인터페이스 추가
-- [ ] 더 많은 포트폴리오 문서 유형 지원
-- [ ] 실시간 채용 공고 크롤링 연동
-- [ ] 사용자 피드백 기반 추천 개선
 - [ ] 다국어 지원
 
 ## 🤝 기여하기

@@ -13,8 +13,7 @@ import openai
 import json
 from datetime import datetime
 
-from src.database.vector_database import ChromaVectorDB
-from src.config.settings import settings
+from config.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +28,6 @@ class PersonalizedAIService:
         if not test_mode:
             # OpenAI 클라이언트 설정
             self.client = openai.OpenAI(api_key=settings.openai_api_key)
-
-        # 벡터 데이터베이스 인스턴스들
-        self.portfolio_db = ChromaVectorDB(collection_name="portfolio_documents")
-        self.activity_db = ChromaVectorDB(collection_name="activities")
-        self.recruitment_db = ChromaVectorDB(collection_name="recruitments")
 
     def get_user_profile_context(self, user_id: Optional[str] = None) -> str:
         """
@@ -430,3 +424,156 @@ class PersonalizedAIService:
         except Exception as e:
             logger.error(f"종합 인사이트 생성 실패: {str(e)}")
             return {"success": False, "error": str(e)}
+
+    def analyze_portfolio_from_data(
+        self, analysis_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        작업 큐에서 온 데이터 형식을 기반으로 포트폴리오 분석
+
+        Args:
+            analysis_data: {
+                "activities": [...],
+                "educations": [...],
+                "userId": int,
+                "analysisId": int
+            }
+
+        Returns:
+            AI가 분석한 포트폴리오 분석 결과 (요약, 강점, 약점, 추천 직무 포함)
+        """
+        try:
+            # 데이터 추출
+            activities = analysis_data.get("activities", [])
+            educations = analysis_data.get("educations", [])
+            user_id = analysis_data.get("userId")
+            analysis_id = analysis_data.get("analysisId")
+
+            # 포트폴리오 텍스트 구성
+            portfolio_text = self._build_portfolio_from_data(activities, educations)
+
+            # AI 프롬프트 구성
+            prompt = f"""
+다음은 분석할 포트폴리오 정보입니다:
+
+{portfolio_text}
+
+위 포트폴리오를 종합적으로 분석하여 요약, 강점, 약점, 추천 직무를 제공해주세요.
+
+분석 관점:
+1. 기술적 역량 (Technical Skills)
+2. 프로젝트/활동 경험 (Project/Activity Experience) 
+3. 교육 배경 (Educational Background)
+4. 성장 잠재력 (Growth Potential)
+5. 차별화 요소 (Differentiation)
+
+다음 JSON 형식으로 응답해주세요:
+{{
+    "summary": "포트폴리오 전체를 요약하는 문장 (현재 상황과 역량을 간결하게)",
+    "strength": "포트폴리오의 주요 강점을 종합적으로 설명하는 문장",
+    "weakness": "포트폴리오의 주요 약점을 종합적으로 설명하는 문장",
+    "recommendPosition": "이 포트폴리오에 가장 적합한 추천 직무"
+}}
+
+각 필드는 다음과 같이 작성해주세요:
+- summary: 전체적인 상황과 역량을 객관적으로 요약 (약 80-150자)
+- strength: 여러 강점들을 한 문장으로 통합해서 설명 (약 50-100자)
+- weakness: 여러 약점들을 한 문장으로 통합해서 설명 (약 50-100자) 
+- recommendPosition: 강점과 약점을 종합하여 가장 적합한 직무/포지션 추천 (간단명료하게)
+"""
+
+            # OpenAI API 호출
+            response = self.client.chat.completions.create(
+                model=settings.openai_model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "당신은 전문 포트폴리오 분석가입니다. 객관적이고 건설적인 피드백을 제공해주세요.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.5,
+                max_tokens=1500,
+            )
+
+            # 응답 파싱
+            ai_response = response.choices[0].message.content
+
+            try:
+                return {
+                    "analysisId": analysis_id,
+                    "taskType": "ANALYZE",
+                    "userId": user_id,
+                    "success": True,
+                    "result": json.loads(ai_response),
+                    "errorMessage": None,
+                    "completedAt": datetime.now().isoformat(),
+                }
+            except json.JSONDecodeError:
+                return {
+                    "analysisId": analysis_id,
+                    "taskType": "ANALYZE",
+                    "userId": user_id,
+                    "success": False,
+                    "result": json.loads(ai_response),
+                    "errorMessage": "AI 응답 파싱 실패",
+                    "completedAt": datetime.now().isoformat(),
+                }
+
+        except Exception as e:
+            logger.error(f"포트폴리오 분석 실패: {str(e)}")
+            return {
+                "analysisId": analysis_id,
+                "taskType": "ANALYZE",
+                "userId": user_id,
+                "success": False,
+                "result": None,
+                "errorMessage": str(e),
+                "completedAt": datetime.now().isoformat(),
+            }
+
+    def _build_portfolio_from_data(
+        self, activities: List[Dict], educations: List[Dict]
+    ) -> str:
+        """
+        활동과 교육 데이터를 포트폴리오 텍스트로 구성
+
+        Args:
+            activities: 활동 정보 리스트
+            educations: 교육 정보 리스트
+
+        Returns:
+            포트폴리오 텍스트
+        """
+        portfolio_sections = []
+
+        # 교육 배경 섹션
+        if educations:
+            portfolio_sections.append("=== 교육 배경 ===")
+            for edu in educations:
+                school = edu.get("school", "학교명 없음")
+                major = edu.get("major", "전공 없음")
+                grade = edu.get("grade", "성적 없음")
+                portfolio_sections.append(f"- {school} {major} (학점: {grade})")
+
+        # 활동/경험 섹션
+        if activities:
+            portfolio_sections.append("\n=== 활동 및 경험 ===")
+            for activity in activities:
+                title = activity.get("title", "제목 없음")
+                description = activity.get("description", "설명 없음")
+                content = activity.get("content", "")
+                tags = activity.get("tags", [])
+
+                portfolio_sections.append(f"◆ {title}")
+                portfolio_sections.append(f"  설명: {description}")
+                if content:
+                    portfolio_sections.append(f"  상세: {content}")
+                if tags:
+                    portfolio_sections.append(f"  태그: {', '.join(tags)}")
+
+        return (
+            "\n".join(portfolio_sections)
+            if portfolio_sections
+            else "포트폴리오 정보가 없습니다."
+        )

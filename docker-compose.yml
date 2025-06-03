@@ -1,20 +1,6 @@
 version: '3.8'
 
 services:
-  chromadb:
-    image: chromadb/chroma:latest
-    container_name: chromadb
-    ports:
-      - "${CHROMA_PORT:-8000}:8000"
-    volumes:
-      - chroma_data:/chroma/chroma
-    environment:
-      - CHROMA_SERVER_HOST=0.0.0.0
-      - CHROMA_SERVER_HTTP_PORT=8000
-    restart: unless-stopped
-    networks:
-      - knowme-network
-
   mysql:
     image: mysql:8.0
     container_name: mysql

@@ -5,6 +5,7 @@ import os
 
 load_dotenv()
 
+
 class Settings(BaseSettings):
     # OpenAI API 설정
     openai_api_key: str = os.getenv("OPENAI_API_KEY")
@@ -34,7 +35,7 @@ class Settings(BaseSettings):
     minio_api_port: int = 9000
     minio_console_port: int = 9001
     minio_root_user: str = os.getenv("MINIO_ROOT_USER")
-    minio_root_password: str
+    minio_root_password: str = os.getenv("MINIO_ROOT_PASSWORD")
 
     class Config:
         env_file = ".env"
