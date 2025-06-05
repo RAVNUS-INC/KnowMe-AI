@@ -120,7 +120,7 @@ class PersonalizedAIService:
             "activity_type": "활동 유형",
             "title": "활동명",
             "description": "활동 설명",
-            "relevance_reason": "추천 이유",
+            "recommend_reason": "추천 이유",
             "expected_benefits": ["예상 혜택1", "예상 혜택2"],
             "difficulty_level": "난이도 (초급/중급/고급)",
             "time_commitment": "예상 소요 시간"
@@ -140,7 +140,7 @@ class PersonalizedAIService:
                             "activity_type": "온라인 코스",
                             "title": "AI 기초",
                             "description": "인공지능의 기초 개념과 활용법을 배우는 온라인 코스",
-                            "relevance_reason": "기술 스택과 관련된 기초 지식 강화",
+                            "recommend_reason": "기술 스택과 관련된 기초 지식 강화",
                             "expected_benefits": ["AI 이해도 향상", "기술 스택 확장"],
                             "difficulty_level": "초급",
                             "time_commitment": "5시간",
@@ -156,7 +156,7 @@ class PersonalizedAIService:
                 messages=[
                     {
                         "role": "system",
-                        "content": "당신은 전문 커리어 컨설턴트입니다. 포트폴리오를 분석하여 맞춤형 대외 활동을 추천해주세요.",
+                        "content": "당신은 커리어 전문 컨설턴트입니다. 주어진 포트폴리오를 분석하여 맞춤형 대외 활동을 추천해주세요.",
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -469,16 +469,16 @@ class PersonalizedAIService:
 
 다음 JSON 형식으로 응답해주세요:
 {{
-    "summary": "포트폴리오 전체를 요약하는 문장 (현재 상황과 역량을 간결하게)",
+    "summary": "포트폴리오 전체를 요약하는 문장 (현재 상황과 역량을 객관적으로 나열)",
     "strength": "포트폴리오의 주요 강점을 종합적으로 설명하는 문장",
     "weakness": "포트폴리오의 주요 약점을 종합적으로 설명하는 문장",
     "recommendPosition": "이 포트폴리오에 가장 적합한 추천 직무"
 }}
 
 각 필드는 다음과 같이 작성해주세요:
-- summary: 전체적인 상황과 역량을 객관적으로 요약 (약 80-150자)
-- strength: 여러 강점들을 한 문장으로 통합해서 설명 (약 50-100자)
-- weakness: 여러 약점들을 한 문장으로 통합해서 설명 (약 50-100자) 
+- summary: 전체적인 상황과 역량을 객관적으로 나열 (약 150-300자)
+- strength: 여러 강점들을 열거형으로 나열하여 상세히 설명 (약 300-500자)
+- weakness: 여러 약점들을 열거형으로 나열하여 설명 (약 50-100자) 
 - recommendPosition: 강점과 약점을 종합하여 가장 적합한 직무/포지션 추천 (간단명료하게)
 """
 
