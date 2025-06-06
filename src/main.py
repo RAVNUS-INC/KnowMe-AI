@@ -53,6 +53,8 @@ class MessageProcessor:
             logger.error(f"메시지 처리 중 오류: {str(e)}")
         finally:
             self.stop_processing()
+            await asyncio.sleep(3)
+            await self.start_processing()  # 재시작 시도
 
     def stop_processing(self):
         """메시지 처리 중지"""
